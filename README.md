@@ -7,6 +7,7 @@ PT_Demo_SpringBoot
     - [Initial Setup](#initial-setup)
     - [Codebase Implementation](#codebase-implementation)
     - [Run the Application](#run-the-application)
+- [Unit Testing](#unit-testing)
 
 ## Setup
 ### Initial Setup
@@ -53,3 +54,19 @@ server.port=8080
 1. Open `studentboot/src/main/java/com.petartotev.studentboot/StudentbootApplication`:
 2. Run the main() method to start the application.
 3. Now API should be available on http://localhost:8080/api/students. 
+
+## Unit Testing
+1. Make sure you have the following dependency in `pom.xml`, as it is needed in order to test the controller, using Spring Boot's MockMvc to mock HTTP requests:
+```
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+2. In `studentboot/src/test/java/com.petartotev.studentboot`:
+- create package `repository` and implement `StudentRepositoryTest`;
+- create package `controller` and implement `StudentControllerTest`.
+3. In order to run all tests, either:
+- `Ctrl + Shift + F10` (this didn't work for me...);
+- Right click on `src/test/java` > Run `All Tests`.
