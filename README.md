@@ -8,6 +8,7 @@ PT_Demo_SpringBoot
     - [Codebase Implementation](#codebase-implementation)
     - [Run the Application](#run-the-application)
 - [Unit Testing](#unit-testing)
+- [Use Database](#use-database)
 
 ## Setup
 ### Initial Setup
@@ -70,3 +71,33 @@ server.port=8080
 3. In order to run all tests, either:
 - `Ctrl + Shift + F10` (this didn't work for me...);
 - Right click on `src/test/java` > Run `All Tests`.
+
+## Use Database
+1. Run PostgreSQL container (see PT_Demo_PostgreSQL).
+2. Implement Car model, CarRepository and CarController similar to Student's.
+3. Add the following dependencies in `pom.xml`:
+```
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-jdbc</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+</dependency>
+```
+4. In `application.properties`, add the following:
+```
+spring.datasource.url=jdbc:postgresql://localhost:5432/your_database_name
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# Optional: Enable SQL logging
+spring.jpa.show-sql=true
+spring.datasource.initialization-mode=always
+```
+5. Make sure you have the Car table created by creating `schema.sql` in resource directory with query "IF NOT EXISTS CREATE".
+This doesn't work!
+I needed to create this manually by executing the query in DBeaver.
+6. Refactor the Repository and Controller as it currently is.
