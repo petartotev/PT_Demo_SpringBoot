@@ -9,6 +9,7 @@ PT_Demo_SpringBoot
     - [Run the Application](#run-the-application)
 - [Unit Testing](#unit-testing)
 - [Use Database](#use-database)
+- [Use Redis](#use-redis)
 
 ## Setup
 ### Initial Setup
@@ -101,3 +102,24 @@ spring.datasource.initialization-mode=always
 This doesn't work!
 I needed to create this manually by executing the query in DBeaver.
 6. Refactor the Repository and Controller as it currently is.
+
+## Use Redis
+1. Run Redis in Docker Container on `localhost:6370`:
+```
+docker run --name redis-server -p 6379:6379 -d redis
+```
+2. Add the following dependency in `pom.xml`:
+```
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```
+3. Configure Redis in `application.properties`:
+```
+spring.redis.host=localhost
+spring.redis.port=6379
+```
+4. Implement `Employee` model, using @RedisHash("Employee") and @Id - should be String.
+5. Implement `EmployeeRepository` interface using @Repository and extending CrudRepository<Employee, String>.
+6. Implement `EmployeeController` that injects `EmployeeRepository employeeRepository`.
