@@ -2,13 +2,16 @@ package com.petartotev.studentboot.controller;
 
 import com.petartotev.studentboot.model.Student;
 import com.petartotev.studentboot.repository.StudentRepository;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/students")
+@Validated
 public class StudentController {
 
     private final StudentRepository studentRepository = new StudentRepository();
@@ -26,13 +29,13 @@ public class StudentController {
     }
 
     @PostMapping
-    public ResponseEntity<Student> createStudent(@RequestBody Student student) {
+    public ResponseEntity<Student> createStudent(@Valid @RequestBody Student student) {
         Student savedStudent = studentRepository.save(student);
         return ResponseEntity.ok(savedStudent);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Student> updateStudent(@PathVariable Long id, @RequestBody Student student) {
+    public ResponseEntity<Student> updateStudent(@PathVariable Long id, @Valid @RequestBody Student student) {
         Optional<Student> existingStudent = studentRepository.findById(id);
         if (existingStudent.isPresent()) {
             student.setId(id);

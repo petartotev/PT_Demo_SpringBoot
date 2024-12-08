@@ -123,3 +123,44 @@ spring.redis.port=6379
 4. Implement `Employee` model, using @RedisHash("Employee") and @Id - should be String.
 5. Implement `EmployeeRepository` interface using @Repository and extending CrudRepository<Employee, String>.
 6. Implement `EmployeeController` that injects `EmployeeRepository employeeRepository`.
+
+## Validation
+
+1. Add the following dependencies in `pom.xml`:
+```
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+<dependency>
+  <groupId>jakarta.validation</groupId>
+  <artifactId>jakarta.validation-api</artifactId>
+  <version>3.1.0</version>
+</dependency>
+```
+2. In `Student` class, add `@NotBlank`, `@NotNull`, `@Size` annotations in order to validate the properties needed.
+3. In `StudentController` class, add `@Validated` annotation on the class and `@Valid` annotation on the `@RequestBody` argument of the POST and PUT methods
+4. Create `GlobalExceptionHandler` as follows:
+```
+package com.petartotev.studentboot;
+
+...
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.put(error.getField(), error.getDefaultMessage());
+        }
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGenericException(Exception ex) {
+        return new ResponseEntity<>("An error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+```

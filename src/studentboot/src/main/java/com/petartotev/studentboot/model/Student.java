@@ -1,11 +1,18 @@
 package com.petartotev.studentboot.model;
 
+import jakarta.validation.constraints.*;
+
 import java.time.LocalDate;
 
 public class Student {
     private Long id;
+    @NotBlank(message = "First Name cannot be blank")
+    @Size(max = 50, message = "First Name must be less than 50 characters")
     private String firstName;
+    @NotBlank(message = "Last Name cannot be blank")
+    @Size(max = 50, message = "Last Name must be less than 50 characters")
     private String lastName;
+    @NotNull(message = "Age is required")
     private int age;
     private LocalDate dateOfBirth;
     private Gender gender;
