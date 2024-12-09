@@ -10,6 +10,10 @@ PT_Demo_SpringBoot
 - [Unit Testing](#unit-testing)
 - [Use Database](#use-database)
 - [Use Redis](#use-redis)
+- [Validation](#validation)
+  - [Simple Implementation](#simple-implementation)
+  - [Bean Validation Annotations in Java](#bean-validation-annotations-in-java)
+  - [Custom Validation](#custom-validation)
 
 ## Setup
 ### Initial Setup
@@ -126,6 +130,8 @@ spring.redis.port=6379
 
 ## Validation
 
+### Simple Implementation
+
 1. Add the following dependencies in `pom.xml`:
 ```
 <dependency>
@@ -162,5 +168,47 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleGenericException(Exception ex) {
         return new ResponseEntity<>("An error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+}
+```
+
+### Bean Validation Annotations in Java
+
+| **Annotation**         | **Description**                                                                         | **Example**                                                                                                             |
+|------------------------|-----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `@NotNull`             | Ensures the value is not `null`.                                                        | `@NotNull(message = "Value cannot be null") private String name;`                                                       |
+| `@NotBlank`            | Ensures the value is not `null` or blank (ignores whitespace). For `String` types only. | `@NotBlank(message = "Value cannot be blank") private String username;`                                                 |
+| `@NotEmpty`            | Ensures the value is not `null` or empty. Works for collections, strings, arrays, etc.  | `@NotEmpty(message = "Collection cannot be empty") private List<String> items;`                                         |
+| `@Size`                | Enforces size constraints for strings, collections, arrays, etc.                        | `@Size(min = 1, max = 50, message = "Name must be between 1 and 50 characters") private String name;`                   |
+| `@Min`                 | Ensures the value is greater than or equal to the specified minimum.                    | `@Min(value = 18, message = "Age must be at least 18") private int age;`                                                |
+| `@Max`                 | Ensures the value is less than or equal to the specified maximum.                       | `@Max(value = 100, message = "Age cannot exceed 100") private int age;`                                                 |
+| `@Positive`            | Ensures the value is positive (greater than 0).                                         | `@Positive(message = "Value must be positive") private int quantity;`                                                   |
+| `@PositiveOrZero`      | Ensures the value is positive or zero.                                                  | `@PositiveOrZero(message = "Value must be zero or positive") private int balance;`                                      |
+| `@Negative`            | Ensures the value is negative (less than 0).                                            | `@Negative(message = "Value must be negative") private int temperature;`                                                |
+| `@NegativeOrZero`      | Ensures the value is negative or zero.                                                  | `@NegativeOrZero(message = "Value must be zero or negative") private int loss;`                                         |
+| `@DecimalMin`          | Ensures the value is greater than or equal to the specified minimum for decimals.       | `@DecimalMin(value = "0.01", inclusive = true, message = "Amount must be at least 0.01") private BigDecimal amount;`    |
+| `@DecimalMax`          | Ensures the value is less than or equal to the specified maximum for decimals.          | `@DecimalMax(value = "100.00", inclusive = false, message = "Amount must be less than 100") private BigDecimal amount;` |
+| `@Past`                | Ensures the date/time is in the past.                                                   | `@Past(message = "Date must be in the past") private LocalDate birthDate;`                                              |
+| `@PastOrPresent`       | Ensures the date/time is in the past or present.                                        | `@PastOrPresent(message = "Date cannot be in the future") private LocalDate createdDate;`                               |
+| `@Future`              | Ensures the date/time is in the future.                                                 | `@Future(message = "Date must be in the future") private LocalDate expiryDate;`                                         |
+| `@FutureOrPresent`     | Ensures the date/time is in the future or present.                                      | `@FutureOrPresent(message = "Date cannot be in the past") private LocalDate meetingDate;`                               |
+| `@Pattern`             | Ensures the value matches the specified regular expression.                             | `@Pattern(regexp = "^[A-Za-z0-9]+$", message = "Must be alphanumeric") private String username;`                        |
+| `@Email`               | Validates that the value is a valid email address.                                      | `@Email(message = "Invalid email format") private String email;`                                                        |
+| `@UUID`                | Ensures the value is a valid UUID string.                                               | `@UUID(message = "Invalid UUID format") private String identifier;`                                                     |
+| `@Null`                | Ensures the value is `null`.                                                            | `@Null(message = "Value must be null") private String optionalField;`                                                   |
+| `@AssertTrue`          | Ensures the value is `true`.                                                            | `@AssertTrue(message = "Must agree to terms") private boolean agreedToTerms;`                                           |
+| `@AssertFalse`         | Ensures the value is `false`.                                                           | `@AssertFalse(message = "Must not be flagged") private boolean flagged;`                                                |
+| `@Digits`              | Ensures the value has a specific number of integer and fraction digits.                 | `@Digits(integer = 5, fraction = 2, message = "Invalid numeric format") private BigDecimal price;`                      |
+
+### Custom Validation
+You can also create your own validation annotations using the `@Constraint` annotation and implementing the `ConstraintValidator` interface.
+
+```java
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = CustomValidator.class)
+public @interface CustomConstraint {
+    String message() default "Custom validation failed";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
 }
 ```
