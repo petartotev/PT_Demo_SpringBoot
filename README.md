@@ -4,6 +4,8 @@ PT_Demo_SpringBoot
 
 ## Contents
 - [Setup](#setup)
+    - [Prerequisites](#prerequisites)
+      - [Install Maven](#install-maven)
     - [Initial Setup](#initial-setup)
     - [Codebase Implementation](#codebase-implementation)
     - [Run the Application](#run-the-application)
@@ -14,8 +16,27 @@ PT_Demo_SpringBoot
   - [Simple Implementation](#simple-implementation)
   - [Bean Validation Annotations in Java](#bean-validation-annotations-in-java)
   - [Custom Validation](#custom-validation)
+- [Docker](#docker)
 
 ## Setup
+### Prerequisites
+#### Install Maven
+1. Download the latest Maven binary zip archive from https://maven.apache.org/download.cgi. 
+3. Extract Maven.
+4. Extract the downloaded ZIP file to a directory, e.g., C:\Program Files\Maven. 
+5. Set Environment Variables:
+- Add MAVEN_HOME:
+   - Right-click This PC > Properties > Advanced System Settings > Environment Variables.
+   - Under System Variables, click New.
+   - Set Variable Name to MAVEN_HOME and Variable Value to the path where Maven is extracted (e.g., C:\Program Files\Maven).
+- Update PATH:
+   - Find the Path variable under System Variables and click Edit.
+   - Add C:\Program Files\Maven\bin (or the bin folder under the extracted Maven directory).
+6. Verify installation:
+```
+mvn -v
+```
+
 ### Initial Setup
 
 1. Go to [Spring Initializr](https://start.spring.io/).
@@ -211,4 +232,18 @@ public @interface CustomConstraint {
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
+```
+
+## Docker
+
+1. Create a `Dockerfile` in the main directory (where `pom.xml` is).
+2. Update `application.properties` and make sure your application runs on a dynamic host and port for Docker compatibility.
+3. Create a `docker-compose.yml` in the main directory (where `pom.xml` is).
+4. Build the Spring Boot application:
+```
+mvn clean package
+```
+5. Build and run Docker containers using docker-compose:
+```
+docker-compose up --build
 ```
