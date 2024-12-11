@@ -3,42 +3,49 @@
 PT_Demo_SpringBoot
 
 ## Contents
+- [C# vs Java](#c-vs-java)
 - [Setup](#setup)
     - [Prerequisites](#prerequisites)
       - [Install Maven](#install-maven)
     - [Initial Setup](#initial-setup)
-    - [Codebase Implementation](#codebase-implementation)
+    - [Simple Codebase Implementation](#simple-codebase-implementation)
     - [Run the Application](#run-the-application)
 - [Unit Testing](#unit-testing)
-- [Use Database](#use-database)
+- [Use Database with JDBC](#use-database-with-jdbc)
 - [Use Redis](#use-redis)
 - [Validation](#validation)
   - [Simple Implementation](#simple-implementation)
   - [Bean Validation Annotations in Java](#bean-validation-annotations-in-java)
   - [Custom Validation](#custom-validation)
+- [Retry Mechanism using Resilience4j](#retry-mechanism-using-resilience4j-similar-to-polly-in-net)
 - [Docker](#docker)
+- [Known Issues](#known-issues)
+  - [Port 8080 taken](#port-8080-is-already-taken)
+
+## C# vs Java
+| Feature         | C#     | Java         |
+|-----------------|--------|--------------|
+| Retry Mechanism | Polly  | Resilience4j |
 
 ## Setup
 ### Prerequisites
 #### Install Maven
-1. Download the latest Maven binary zip archive from https://maven.apache.org/download.cgi. 
-3. Extract Maven.
-4. Extract the downloaded ZIP file to a directory, e.g., C:\Program Files\Maven. 
-5. Set Environment Variables:
-- Add MAVEN_HOME:
+1. Download the latest Maven binary zip archive from https://maven.apache.org/download.cgi.
+2. Extract the downloaded ZIP file to a directory, e.g., `C:\Program Files\Maven`. 
+3. Set Environment Variables:
+- Add `MAVEN_HOME`:
    - Right-click This PC > Properties > Advanced System Settings > Environment Variables.
    - Under System Variables, click New.
    - Set Variable Name to MAVEN_HOME and Variable Value to the path where Maven is extracted (e.g., C:\Program Files\Maven).
-- Update PATH:
+- Update `PATH`:
    - Find the Path variable under System Variables and click Edit.
    - Add C:\Program Files\Maven\bin (or the bin folder under the extracted Maven directory).
-6. Verify installation:
+4. Verify installation:
 ```
 mvn -v
 ```
 
 ### Initial Setup
-
 1. Go to [Spring Initializr](https://start.spring.io/).
 2. Set the following options:
 - Project: `Maven`
@@ -65,25 +72,23 @@ mvn -v
 ![setup-2](./res/setup-2.jpg)
 - IntelliJ will load the project and download dependencies.
 
-### Codebase Implementation
-
+### Simple Codebase Implementation
 1. In `studentboot/src/main/java/com.petartotev.studentboot`:
-- create package `model` and implement model `Student.java`.
-- create package `repository` and implement `StudentRepository.java`.
-- create package `controller` and implement `StudentController.java`.
-2. In `studentboot/src/main/resources/application.properties`, add port configuration (optional):
+- Create package `model` and implement model `Student.java`.
+- Create package `repository` and implement `StudentRepository.java`.
+- Create package `controller` and implement `StudentController.java`.
+2. (Optional) In `studentboot/src/main/resources/application.properties`, add port configuration:
 ```
 server.port=8080
 ```
 
 ### Run the Application
-
 1. Open `studentboot/src/main/java/com.petartotev.studentboot/StudentbootApplication`:
-2. Run the main() method to start the application.
-3. Now API should be available on http://localhost:8080/api/students. 
+2. Run the `main()` method to start the application.
+3. Finally, API should be available on [GET] http://localhost:8080/api/students. 
 
 ## Unit Testing
-1. Make sure you have the following dependency in `pom.xml`, as it is needed in order to test the controller, using Spring Boot's MockMvc to mock HTTP requests:
+1. Add the following dependency in `pom.xml` to test the controller(s) using Spring Boot's MockMvc to mock HTTP requests:
 ```
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -92,15 +97,15 @@ server.port=8080
 </dependency>
 ```
 2. In `studentboot/src/test/java/com.petartotev.studentboot`:
-- create package `repository` and implement `StudentRepositoryTest`;
-- create package `controller` and implement `StudentControllerTest`.
+- Create package `repository` and implement `StudentRepositoryTest`;
+- Create package `controller` and implement `StudentControllerTest`.
 3. In order to run all tests, either:
 - `Ctrl + Shift + F10` (this didn't work for me...);
 - Right click on `src/test/java` > Run `All Tests`.
 
-## Use Database
+## Use Database with JDBC
 1. Run PostgreSQL container (see PT_Demo_PostgreSQL).
-2. Implement Car model, CarRepository and CarController similar to Student's.
+2. Implement `Car` model, `CarRepository` and `CarController` similar to `Student`'s.
 3. Add the following dependencies in `pom.xml`:
 ```
 <dependency>
@@ -118,14 +123,12 @@ spring.datasource.url=jdbc:postgresql://localhost:5432/your_database_name
 spring.datasource.username=your_username
 spring.datasource.password=your_password
 spring.datasource.driver-class-name=org.postgresql.Driver
-
 # Optional: Enable SQL logging
 spring.jpa.show-sql=true
 spring.datasource.initialization-mode=always
 ```
 5. Make sure you have the Car table created by creating `schema.sql` in resource directory with query "IF NOT EXISTS CREATE".
-This doesn't work!
-I needed to create this manually by executing the query in DBeaver.
+⚠️ WARNING: This doesn't work! I needed to create this manually by executing the query in DBeaver.
 6. Refactor the Repository and Controller as it currently is.
 
 ## Use Redis
@@ -150,9 +153,7 @@ spring.redis.port=6379
 6. Implement `EmployeeController` that injects `EmployeeRepository employeeRepository`.
 
 ## Validation
-
 ### Simple Implementation
-
 1. Add the following dependencies in `pom.xml`:
 ```
 <dependency>
@@ -170,12 +171,9 @@ spring.redis.port=6379
 4. Create `GlobalExceptionHandler` as follows:
 ```
 package com.petartotev.studentboot;
-
 ...
-
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -193,7 +191,6 @@ public class GlobalExceptionHandler {
 ```
 
 ### Bean Validation Annotations in Java
-
 | **Annotation**         | **Description**                                                                         | **Example**                                                                                                             |
 |------------------------|-----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | `@NotNull`             | Ensures the value is not `null`.                                                        | `@NotNull(message = "Value cannot be null") private String name;`                                                       |
@@ -234,8 +231,90 @@ public @interface CustomConstraint {
 }
 ```
 
-## Docker
+## Retry Mechanism using Resilience4j (similar to Polly in .NET)
+1. Add `resilience4j` dependency in `pom.xml`:
+```
+<dependency>
+    <groupId>io.github.resilience4j</groupId>
+    <artifactId>resilience4j-retry</artifactId>
+    <version>2.0.2</version>
+</dependency>
+```
+2. Create new package `config` containing a new `Resilience4jConfig` class:
+```
+@Configuration
+public class Resilience4jConfig {
+    @Bean
+    public Retry retryConfig() {
+        RetryConfig config = RetryConfig.custom()
+                .maxAttempts(3) // Retry 3 times
+                .waitDuration(Duration.ofSeconds(2)) // Wait 2 seconds between retries
+                .build();
+        return Retry.of("carRepository", config);
+    }
+}
+```
+3. Update `CarRepository` in order to use the retry mechanism by injecting `Retry retry` and using it in methods:
+```
+    public Optional<Car> findById(Long id) {
+        Supplier<Optional<Car>> findSupplier = Retry.decorateSupplier(retry, () -> { ... });
+        return findSupplier.get();
+    }
+```
+4. (Optional) You can test the retry logic by simulating the following exception:
+```
+@Override
+public Optional<Car> findById(Long id) {
+    Supplier<Optional<Car>> findSupplier = Retry.decorateSupplier(retry, () -> {
+        throw new RuntimeException("Simulated database failure");
+    });
+    return findSupplier.get();
+}
+```
+5. You can add logging by adding the following code at the bottom of `Resilience4jConfig` class:
+```
+        // Add event listener to log retry attempts
+        retry.getEventPublisher()
+                .onRetry(event -> System.out.println("Retry attempt #" + event.getNumberOfRetryAttempts()
+                        + " for " + event.getName()));
+```
+6. (Optional) You can move the hardcoded maxAttempts value and waitDuration value in `application.properties`:
+```
+resilience4j.retry.carRepository.maxAttempts=6
+resilience4j.retry.carRepository.waitDuration=1000
+```
+Next, use these in `Resilience4jConfig` class:
+```
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
+import org.springframework.beans.factory.annotation.Value;
+...
 
+@Configuration
+public class Resilience4jConfig {
+    @Value("${resilience4j.retry.carRepository.maxAttempts:3}") // Default value is 3 if not specified
+    private int maxAttempts;
+    @Value("${resilience4j.retry.carRepository.waitDuration:2000}") // Default value is 2000 ms if not specified
+    private long waitDuration;
+
+    @Bean
+    public Retry retryConfig() {
+        ...
+    }
+}
+```
+7. Test by running the application and calling [GET] `http://localhost:8080/api/cars/1`.  
+Output should be:
+```
+Retry attempt #1 for carRepository
+Retry attempt #2 for carRepository
+Retry attempt #3 for carRepository
+Retry attempt #4 for carRepository
+Retry attempt #5 for carRepository
+```
+Note that values from `application.properties` override the ones set as default in `Resilience4jConfig` class.
+
+## Docker
 1. Create a `Dockerfile` in the main directory (where `pom.xml` is).
 2. Update `application.properties` and make sure your application runs on a dynamic host and port for Docker compatibility.
 3. Create a `docker-compose.yml` in the main directory (where `pom.xml` is).
@@ -247,3 +326,12 @@ mvn clean package
 ```
 docker-compose up --build
 ```
+
+## Known Issues
+### Port 8080 is already taken
+Fix:
+1. Execute the following command in cmd.exe:
+```
+netstat -ano | findstr :8080
+```
+2. Kill the process (probably java.exe) in Task Manager.
