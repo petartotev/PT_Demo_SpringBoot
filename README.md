@@ -30,19 +30,26 @@ PT_Demo_SpringBoot
 ## Setup
 ### Prerequisites
 #### Install Maven
-1. Download the latest Maven binary zip archive from https://maven.apache.org/download.cgi.
-2. Extract the downloaded ZIP file to a directory, e.g., `C:\Program Files\Maven`. 
+1. Download the latest Maven binary ZIP archive from https://maven.apache.org/download.cgi.
+2. Extract the downloaded ZIP file to a directory, e.g. `C:\Program Files\Maven`. 
 3. Set Environment Variables:
 - Add `MAVEN_HOME`:
-   - Right-click This PC > Properties > Advanced System Settings > Environment Variables.
-   - Under System Variables, click New.
-   - Set Variable Name to MAVEN_HOME and Variable Value to the path where Maven is extracted (e.g., C:\Program Files\Maven).
+   - Right-click `This PC` > `Properties` > `Advanced System Settings` > `Environment Variables`.
+   - Under `System Variables`, click `New`.
+   - Set `Variable Name` to `MAVEN_HOME` and `Variable Value` to the path where Maven is extracted (`C:\Program Files\Maven`).
 - Update `PATH`:
-   - Find the Path variable under System Variables and click Edit.
-   - Add C:\Program Files\Maven\bin (or the bin folder under the extracted Maven directory).
+   - Find the Path variable under `System Variables` and click `Edit`.
+   - Add `C:\Program Files\Maven\bin` (or the bin folder under the extracted Maven directory).
 4. Verify installation:
 ```
 mvn -v
+
+Output:
+  Apache Maven 3.9.9 (...)
+  Maven home: ...
+  Java version: 21.0.1, vendor: Oracle Corporation, runtime: ...
+  Default locale: ...
+  OS name: ...
 ```
 
 ### Initial Setup
