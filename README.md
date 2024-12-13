@@ -22,9 +22,13 @@ PT_Demo_SpringBoot
   - [Health Endpoint](#health-endpoint)
   - [Info Endpoint](#info-endpoint)
   - [Metrics Endpoint](#metrics-endpoint)
+- [Background Jobs](#background-jobs)
+  - [Synchronous Processing](#synchronous-processing)
+  - [Asynchronous Processing](#asynchronous-processing)
 - [Docker](#docker)
 - [Known Issues](#known-issues)
   - [Port 8080 taken](#port-8080-is-already-taken)
+- [Links](#links)
 
 ## TODO
 1. Swagger?
@@ -448,6 +452,32 @@ management.endpoints.web.exposure.include=health,info,metrics
 }
 ```
 
+## Background Jobs
+### Synchronous Processing
+1. Add `@EnableScheduling` annotation upon class `StudentbootApplication.java`.
+2. Implement `BackgroundJobService` having `@Service` annotation and its methods having `@Scheduled` annotations.
+3. In `application.properties`, add the following:
+```
+# Example for configuring Spring Task Scheduling
+spring.task.scheduling.pool.size=5  # Size of the thread pool used by the scheduler
+```
+4. Run the application:
+```
+Background job is running...
+Task started after application startup...
+Task started after application startup...
+Task started after application startup...
+Background job is running...
+Task started after application startup...
+```
+
+### Asynchronous Processing
+If you need to run the background job asynchronously (e.g., in parallel with other tasks), you can use `@Async` along with `@EnableAsync`.
+
+1. Add `@EnableAsync` annotation upon class `StudentbootApplication.java`.
+2. Implement `BackgroundAsyncJobService`.
+3. Implement `AsyncController` which invokes `performAsyncTask()`.
+
 ## Docker
 1. Create a `Dockerfile` in the main directory (where `pom.xml` is).
 2. Update `application.properties` and make sure your application runs on a dynamic host and port for Docker compatibility.
@@ -469,3 +499,6 @@ Fix:
 netstat -ano | findstr :8080
 ```
 2. Kill the process (probably java.exe) in Task Manager.
+
+## Links
+- https://docs.spring.io/spring-boot/
