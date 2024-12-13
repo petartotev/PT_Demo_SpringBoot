@@ -9,8 +9,8 @@ PT_Demo_SpringBoot
       - [Install Maven](#install-maven)
     - [Initial Setup](#initial-setup)
     - [Simple Codebase Implementation](#simple-codebase-implementation)
-    - [Run the Application](#run-the-application)
-- [Unit Testing](#unit-testing)
+    - [Unit Testing](#unit-testing)
+    - [Run Application](#run-application)
 - [Use Database with JDBC](#use-database-with-jdbc)
 - [Use Redis](#use-redis)
 - [Validation](#validation)
@@ -18,9 +18,20 @@ PT_Demo_SpringBoot
   - [Bean Validation Annotations in Java](#bean-validation-annotations-in-java)
   - [Custom Validation](#custom-validation)
 - [Retry Mechanism using Resilience4j](#retry-mechanism-using-resilience4j-similar-to-polly-in-net)
+- [Actuator](#actuator)
+  - [Health Endpoint](#health-endpoint)
+  - [Info Endpoint](#info-endpoint)
+  - [Metrics Endpoint](#metrics-endpoint)
 - [Docker](#docker)
 - [Known Issues](#known-issues)
   - [Port 8080 taken](#port-8080-is-already-taken)
+
+## TODO
+1. Swagger?
+2. Task Scheduling
+- @EnableScheduling
+- @EnableAsync
+3. Dependency Injection
 
 ## C# vs Java
 | Feature         | C#     | Java         |
@@ -89,12 +100,7 @@ Output:
 server.port=8080
 ```
 
-### Run the Application
-1. Open `studentboot/src/main/java/com.petartotev.studentboot/StudentbootApplication`:
-2. Run the `main()` method to start the application.
-3. Finally, API should be available on [GET] http://localhost:8080/api/students. 
-
-## Unit Testing
+### Unit Testing
 1. Add the following dependency in `pom.xml` to test the controller(s) using Spring Boot's MockMvc to mock HTTP requests:
 ```
 <dependency>
@@ -109,6 +115,11 @@ server.port=8080
 3. In order to run all tests, either:
 - `Ctrl + Shift + F10` (this didn't work for me...);
 - Right click on `src/test/java` > Run `All Tests`.
+
+### Run Application
+1. Open `studentboot/src/main/java/com.petartotev.studentboot/StudentbootApplication`:
+2. Run the `main()` method to start the application.
+3. Finally, API should be available on [GET] http://localhost:8080/api/students. 
 
 ## Use Database with JDBC
 1. Run PostgreSQL container (see PT_Demo_PostgreSQL).
@@ -320,6 +331,122 @@ Retry attempt #4 for carRepository
 Retry attempt #5 for carRepository
 ```
 Note that values from `application.properties` override the ones set as default in `Resilience4jConfig` class.
+
+## Actuator
+
+Actuator has a bunch of useful endpoints, for example:
+
+| Endpoint                       | Description                                                                | Example Request                         | Example Response                                                               |
+|--------------------------------|----------------------------------------------------------------------------|-----------------------------------------|--------------------------------------------------------------------------------|
+| `/actuator/health`             | Provides the health status of the application.                             | `GET /actuator/health`                  | `{"status": "UP"}`                                                             |
+| `/actuator/info`               | Exposes arbitrary application information such as build version.           | `GET /actuator/info`                    | `{"version": "1.0.0", "description": "My App"}`                                |
+| `/actuator/metrics`            | Provides various metrics about the application (e.g., JVM, HTTP requests). | `GET /actuator/metrics`                 | `{"names": ["jvm.memory.used", "http.server.requests"]}`                       |
+| `/actuator/env`                | Exposes environment properties and configuration values.                   | `GET /actuator/env`                     | `{"properties": {"java.version": "11"}}`                                       |
+| `/actuator/auditevents`        | Displays audit events (e.g., login, user activities).                      | `GET /actuator/auditevents`             | `{"event": "User login", "timestamp": "2024-12-12"}`                           |
+| `/actuator/heapdump`           | Generates a heap dump of the JVM.                                          | `GET /actuator/heapdump`                | Binary heap dump file                                                          |
+| `/actuator/threaddump`         | Displays a thread dump of the application.                                 | `GET /actuator/threaddump`              | Text-based thread dump                                                         |
+| `/actuator/loggers`            | Shows and modifies the application's logging levels.                       | `GET /actuator/loggers`                 | `{"loggers": {"root": "INFO"}}`                                                |
+| `/actuator/metrics/{metricName}` | Provides details about a specific metric.                                  | `GET /actuator/metrics/jvm.memory.used` | `{"name": "jvm.memory.used", "value": 1024}`                                   |
+| `/actuator/beans`              | Lists all beans in the Spring context.                                     | `GET /actuator/beans`                   | `{"beans": {"myBean": {...}}}`                                                 |
+| `/actuator/conditions`         | Exposes information about conditional beans.                               | `GET /actuator/conditions`              | `{"conditions": [{"condition": "true"}]}`                                      |
+| `/actuator/caches`             | Displays cache statistics.                                                 | `GET /actuator/caches`                  | `{"caches": {"myCache": {"size": 10}}}`                                        |
+| `/actuator/scheduledtasks`     | Shows scheduled tasks within the application.                              | `GET /actuator/scheduledtasks`          | `{"tasks": [{"name": "task1", "nextExecution": "2024-12-12"}]}`                |
+| `/actuator/prometheus`         | Exposes metrics in the Prometheus format for monitoring.                   | `GET /actuator/prometheus`              | `# HELP jvm_memory_used Used memory in JVM`                                    |
+| `/actuator/mappings`           | Lists all request mappings in the application.                             | `GET /actuator/mappings`                | `{"mappings": [{"path": "/api/students", "controller": "StudentController"}]}` |
+| `/actuator/trace`              | Displays HTTP request and response trace data.                             | `GET /actuator/trace`                   | `{"trace": [{"method": "GET", "url": "/api/students"}]}`                       |
+| `/actuator/metrics`            | Provides the list of available metric names.                               | `GET /actuator/metrics`                 | `{"names": ["application.ready.time", "process.cpu.usage"]}`                   |
+
+### Health Endpoint
+1. In `pom.xml`, add dependency:
+```
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+2. In `application.properties`, add properties:
+```
+management.endpoint.health.enabled=true
+management.endpoints.web.exposure.include=health
+management.endpoint.health.show-details=always
+```
+3. (Optional) Add custom health check:
+```
+package com.petartotev.studentboot;
+
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.stereotype.Component;
+
+@Component
+public class StudentbootHealthIndicator implements HealthIndicator {
+    @Override
+    public Health health() { return Health.up().withDetail("Studentboot", "Running").build(); }
+}
+```
+4. Access Health Endpoint on http://localhost:8080/actuator/health.
+Output:
+![health-check](./res/health-check.jpg)
+
+### Info Endpoint
+1. Do all steps from the previous section.
+2. Expand the following property in `application.properties`:
+```
+management.endpoints.web.exposure.include=health,info
+```
+3. Implement:
+```
+package com.petartotev.studentboot;
+
+import org.springframework.boot.actuate.info.Info;
+import org.springframework.boot.actuate.info.InfoContributor;
+import org.springframework.stereotype.Component;
+
+@Component
+public class StudentbootInfoContributor implements InfoContributor {
+    @Override
+    public void contribute(Info.Builder builder) {
+        builder.withDetail("app.name", "Student Boot")
+                .withDetail("app.version", "1.0.0");
+    }
+}
+```
+4. Access Info Endpoint on http://localhost:8080/actuator/info:
+```
+{
+  "app.name": "Student Boot",
+  "app.version": "1.0.0"
+}
+```
+
+### Metrics Endpoint
+1. Do all steps from the previous section.
+2. Expand the following property in `application.properties`:
+```
+management.endpoints.web.exposure.include=health,info,metrics
+```
+3. Access Metrics Endpoint on http://localhost:8080/actuator/metrics:
+```
+{
+"names": [
+"application.ready.time",
+"application.started.time",
+"disk.free",
+...
+"tomcat.sessions.rejected"
+]
+}
+```
+4. Access a particular metric on http://localhost:8080/actuator/metrics/disk.free:
+```
+{
+"name": "disk.free",
+"description": "Usable space for path",
+"baseUnit": "bytes",
+"measurements": [ { "statistic": "VALUE", "value": 31357370368 } ],
+"availableTags": [ { "tag": "path", "values": [ "D:\\Projects\\PT_Demo_SpringBoot\\." ] } ]
+}
+```
 
 ## Docker
 1. Create a `Dockerfile` in the main directory (where `pom.xml` is).
