@@ -17,6 +17,15 @@ PT_Demo_SpringBoot
   - [Simple Implementation](#simple-implementation)
   - [Bean Validation Annotations in Java](#bean-validation-annotations-in-java)
   - [Custom Validation](#custom-validation)
+- [Dependency Injection](#dependency-injection)
+  - [Simple DI Example](#simple-di-example)
+  - [Annotations in DI](#annotations-in-di)
+  - [Scopes in DI](#scopes-in-di)
+  - [Scopes Examples](#scopes-di-examples)
+    - [Singleton](#singleton-default-scope)
+    - [Prototype (Transient?)](#prototype)
+    - [Request (Scoped)](#request-scope)
+  - [Using Interfaces with Multiple Implementations](#using-interfaces-and-multiple-implementations)
 - [Retry Mechanism using Resilience4j](#retry-mechanism-using-resilience4j-similar-to-polly-in-net)
 - [Actuator](#actuator)
   - [Health Endpoint](#health-endpoint)
@@ -32,10 +41,7 @@ PT_Demo_SpringBoot
 
 ## TODO
 1. Swagger?
-2. Task Scheduling
-- @EnableScheduling
-- @EnableAsync
-3. Dependency Injection
+2. Dependency Injection
 
 ## C# vs Java
 | Feature         | C#     | Java         |
@@ -250,6 +256,150 @@ public @interface CustomConstraint {
     String message() default "Custom validation failed";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
+}
+```
+
+## Dependency Injection
+
+Dependency Injection (DI) is a design pattern that makes it easier to manage dependencies between components in an application. In Spring Boot, DI is at the core of its framework, leveraging the concept of the Spring IoC (Inversion of Control) container. This container manages the lifecycle and wiring of objects to achieve loose coupling.
+
+### Simple DI Example
+1. Define interface:
+```
+package com.example.service;
+public interface GreetingService { String greet(String name); }
+```
+2. Define class implementing the interface:
+```
+package com.example.service;
+import org.springframework.stereotype.Service;
+@Service // Registers this class as a Spring-managed bean
+public class GreetingServiceImpl implements GreetingService {
+    @Override
+    public String greet(String name) { return "Hello, " + name; }
+}
+```
+3. Inject dependency either by using `@Autowired` or constructor injection:
+```
+package com.example.controller;
+...
+@RestController
+public class GreetingController {
+    private final GreetingService greetingService;
+    
+    public GreetingController(GreetingService greetingService) {
+        this.greetingService = greetingService; // Constructor injection
+    }
+    
+    @GetMapping("/greet")
+    public String greet(@RequestParam String name) { return greetingService.greet(name); }
+}
+```
+
+### Annotations in DI
+
+| Annotation         | Description                                                                            |
+|--------------------|----------------------------------------------------------------------------------------|
+| `@Component`       | Generic stereotype to register a class as a Spring-managed bean.                       |
+| `@Service`         | Specialized `@Component` for service-layer classes.                                    |
+| `@Repository`      | Specialized `@Component` for persistence-layer classes (adds exception translation).   |
+| `@Controller`      | Specialized `@Component` for web controllers.                                          |
+| `@RestController`  | Combines `@Controller` and `@ResponseBody` to simplify RESTful web services.           |
+| `@Autowired`       | Marks a field, constructor, or setter to have its dependency automatically injected.   |
+| `@Qualifier`       | Used with `@Autowired` to specify which bean to inject when multiple candidates exist. |
+| `@Primary`         | Marks a bean as the primary candidate for injection when multiple candidates exist.    |
+| `@Scope`           | Defines the scope of the bean (`singleton`, `prototype`, `request`, etc.).             |
+| `@Configuration`   | Marks a class as a source of bean definitions for the Spring IoC container.            |
+| `@Bean`            | Declares a method that returns a bean to be managed by the Spring container.           |
+
+### Scopes in DI
+
+| Scope        | Description                                                                                        |
+|--------------|----------------------------------------------------------------------------------------------------|
+| `singleton`  | A single instance of the bean is created and shared across the entire application (default scope). |
+| `prototype`  | A new instance of the bean is created each time it is requested.                                   |
+| `request`    | A new instance of the bean is created for each HTTP request (only valid for web applications).     |
+| `session`    | A new instance of the bean is created for each HTTP session (only valid for web applications).     |
+| `application`| A single instance of the bean is shared across the entire servlet context.                         |
+
+### Scopes DI Examples
+
+#### Singleton (Default Scope)
+
+```
+@Service
+public class SingletonService { // Singleton by default }
+```
+
+#### Prototype
+
+```
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+@Service
+@Scope("prototype")
+public class PrototypeService { // New instance created each time this bean is requested }
+```
+
+#### Request Scope
+
+```
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+@Service
+@Scope("request")
+public class RequestScopedService { // New instance per HTTP request }
+```
+
+### Using Interfaces and Multiple Implementations
+
+1. Multiple implementations:
+
+```
+package com.example.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class EnglishGreetingService implements GreetingService {
+    @Override
+    public String greet(String name) { return "Hello, " + name; }
+}
+
+@Service
+public class FrenchGreetingService implements GreetingService {
+    @Override
+    public String greet(String name) { return "Bonjour, " + name; }
+}
+```
+
+2. Use `@Qualifier` to specify which implementation:
+
+```
+package com.example.controller;
+
+import com.example.service.GreetingService;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class GreetingController {
+
+    private final GreetingService greetingService;
+
+    // THIS:
+    public GreetingController(@Qualifier("englishGreetingService") GreetingService greetingService) {
+        this.greetingService = greetingService;
+    }
+
+    @GetMapping("/greet")
+    public String greet(@RequestParam String name) {
+        return greetingService.greet(name);
+    }
 }
 ```
 
