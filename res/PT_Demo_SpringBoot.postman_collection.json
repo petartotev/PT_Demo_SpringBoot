@@ -77,6 +77,71 @@
 					]
 				},
 				{
+					"name": "Car Get By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/cars/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"cars",
+								"1"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "500 Internal Server Error",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/cars/1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"cars",
+										"1"
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain;charset=UTF-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "45"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 10 Dec 2024 19:11:57 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								}
+							],
+							"cookie": [],
+							"body": "An error occurred: Simulated database failure"
+						}
+					]
+				},
+				{
 					"name": "Car Create",
 					"request": {
 						"method": "POST",
@@ -405,12 +470,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/students",
+							"raw": "http://localhost:8081/api/students",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8081",
 							"path": [
 								"api",
 								"students"
@@ -542,7 +607,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"firstName\": \"Testy\",\r\n    \"lastName\": \"Boo\",\r\n    \"age\": 333,\r\n    \"dateOfBirth\": \"1967-01-15\",\r\n    \"gender\": \"MALE\"\r\n}",
+							"raw": "{\r\n    \"firstName\": \"Petar\",\r\n    \"lastName\": \"Totev\",\r\n    \"dateOfBirth\": \"1967-01-15\",\r\n    \"gender\": \"MALE\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -550,12 +615,12 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/students",
+							"raw": "http://localhost:8081/api/students",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8081",
 							"path": [
 								"api",
 								"students"
@@ -617,6 +682,57 @@
 							],
 							"cookie": [],
 							"body": "{\n    \"id\": 1,\n    \"firstName\": \"Johnny\",\n    \"lastName\": \"Cash\",\n    \"age\": 666,\n    \"dateOfBirth\": \"1934-01-15\",\n    \"gender\": \"MALE\"\n}"
+						},
+						{
+							"name": "400 Bad Request",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"firstName\": \"Testyadsacxdsfsddfdsfdfdsfdsdfsfsffddffdfdsfdfdsfdsfddffdfddfzczxcxzcxzcxzcxzcxzc2\",\r\n    \"lastName\": \"Boo\",\r\n    \"dateOfBirth\": \"1967-01-15\",\r\n    \"gender\": \"MALE\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/students",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"students"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 08 Dec 2024 06:49:57 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"firstName\": \"First Name must be less than 50 characters\"\n}"
 						}
 					]
 				},
@@ -785,6 +901,53 @@
 							"body": null
 						}
 					]
+				}
+			]
+		},
+		{
+			"name": "DI",
+			"item": [
+				{
+					"name": "Dependent Singleton",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/dependent/singleton",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"dependent",
+								"singleton"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Dependent Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/dependent/request",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"dependent",
+								"request"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
