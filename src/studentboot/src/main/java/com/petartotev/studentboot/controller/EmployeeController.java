@@ -2,11 +2,13 @@ package com.petartotev.studentboot.controller;
 
 import com.petartotev.studentboot.model.Employee;
 import com.petartotev.studentboot.repository.EmployeeRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/employees")
 public class EmployeeController {
@@ -19,6 +21,10 @@ public class EmployeeController {
 
     @GetMapping
     public Iterable<Employee> getAllEmployees() {
+        log.info("debug");
+        log.info("info");
+        log.info("warning");
+        log.info("error");
         return employeeRepository.findAll();
     }
 

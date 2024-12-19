@@ -8,11 +8,11 @@ PT_Demo_SpringBoot
     - [Prerequisites](#prerequisites)
       - [Install Maven](#install-maven)
     - [Initial Setup](#initial-setup)
-    - [Simple Codebase Implementation](#simple-codebase-implementation)
+    - [Simple Codebase Implementation (Student)](#simple-codebase-implementation)
     - [Unit Testing](#unit-testing)
     - [Run Application](#run-application)
-- [Use Database with JDBC](#use-database-with-jdbc)
-- [Use Redis](#use-redis)
+- [Use Database with JDBC (Car)](#use-database-with-jdbc)
+- [Use Redis (Employee)](#use-redis)
 - [Validation](#validation)
   - [Simple Implementation](#simple-implementation)
   - [Bean Validation Annotations in Java](#bean-validation-annotations-in-java)
@@ -34,6 +34,7 @@ PT_Demo_SpringBoot
 - [Background Jobs](#background-jobs)
   - [Synchronous Processing](#synchronous-processing)
   - [Asynchronous Processing](#asynchronous-processing)
+- [Logging](#logging)
 - [Docker](#docker)
 - [Known Issues](#known-issues)
   - [Port 8080 taken](#port-8080-is-already-taken)
@@ -41,12 +42,12 @@ PT_Demo_SpringBoot
 
 ## TODO
 1. Swagger?
-2. Dependency Injection
 
 ## C# vs Java
-| Feature         | C#     | Java         |
-|-----------------|--------|--------------|
-| Retry Mechanism | Polly  | Resilience4j |
+| Feature         | C#       | Java                     |
+|-----------------|----------|--------------------------|
+| Retry Mechanism | Polly    | Resilience4j             |
+| Logging         | Serilog  | SLF4J + Logback / Log4j2 |
 
 ## Setup
 ### Prerequisites
@@ -627,6 +628,104 @@ If you need to run the background job asynchronously (e.g., in parallel with oth
 1. Add `@EnableAsync` annotation upon class `StudentbootApplication.java`.
 2. Implement `BackgroundAsyncJobService`.
 3. Implement `AsyncController` which invokes `performAsyncTask()`.
+
+## Logging
+
+In the context of Spring Boot, the alternative to Serilog (which is a popular logging framework for C# and .NET) is typically SLF4J (Simple Logging Facade for Java) with a concrete logging implementation like Logback or Log4j2.
+
+1. Add dependencies in `pom.xml`:
+```
+<!-- SLF4J API -->
+<dependency>
+	<groupId>org.slf4j</groupId>
+	<artifactId>slf4j-api</artifactId>
+</dependency>
+<!-- Logback as the default logging framework for Spring Boot -->
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-logging</artifactId>
+</dependency>
+<!-- Lombok -->
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>1.18.24</version> <!-- Or the latest version available -->
+    <scope>provided</scope>
+</dependency>
+```
+2. (Optional) Configure Logback by creating `logback-spring.xml` in `resources`.
+
+⚠️ WARNING: Having such a file in the resources directory stopped the project from compiling!
+
+3. Spring Boot uses `SLF4J` as the facade for logging.  
+You can inject a logger into your classes either manually or by using the `@Slf4j` annotation (from Lombok).
+
+- Option 1) Without Lombok (manual logging):
+```
+package com.example.demo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class DemoController {
+
+    private static final Logger logger = LoggerFactory.getLogger(DemoController.class);
+
+    @GetMapping("/log-demo")
+    public String logDemo() {
+        logger.info("This is an INFO log");
+        logger.warn("This is a WARN log");
+        logger.error("This is an ERROR log");
+        return "Check your logs!";
+    }
+}
+```
+
+- Option 2) Using Lombok:  
+  - Make sure you have `Lombok` plugin installed:
+![lombok-plugin](./res/plugins-lombok.jpg)
+  - Add `@Slf4j` annotation upon a class and invoke `log.loglevel(...)` directly:
+```
+package com.example.demo;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@Slf4j
+@RestController
+public class DemoController {
+
+    @GetMapping("/log-demo")
+    public String logDemo() {
+        log.info("This is an INFO log");
+        log.warn("This is a WARN log");
+        log.error("This is an ERROR log");
+        return "Check your logs!";
+    }
+}
+```
+
+4. Change Logging Level and Configuration in `application.properties`:
+```
+# Set the root logging level (default is INFO)
+logging.level.root=INFO
+
+# Set logging level for a specific package
+logging.level.com.example.demo=DEBUG
+
+# Logging file configuration
+logging.file.name=logs/myapp.log
+logging.file.max-size=10MB
+logging.file.max-history=7
+```
+
+5. ✅ SUCCESS: Check it out in:
+- `StudentController` - manual logger injection
+- `EmployeeController` - using @Slf4j
 
 ## Docker
 1. Create a `Dockerfile` in the main directory (where `pom.xml` is).
